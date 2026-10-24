@@ -6,12 +6,13 @@ import time
 import zoneinfo
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 from uuid import UUID
 
 import dateparser
 import requests
 import toml
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from icalendar import Calendar, Event, vCalAddress
 
 CALENDAR_UUID = UUID("0c4375e0-9b48-4c7c-92ba-c40495bef667")
@@ -42,14 +43,16 @@ except (FileNotFoundError, json.decoder.JSONDecodeError):
 
 places = {place["name"]: place for place in toml.load("places.toml")["place"]}
 
-elem_text_or_none = lambda e: e.text if e is not None else None
+
+def elem_text_or_none(e: Optional[Tag]) -> Optional[str]:
+    return e.text if e is not None else None
 
 
 def capfirst(s: str) -> str:
     return s[:1].upper() + s[1:]
 
 
-def ensure_datetime(d):
+def ensure_datetime(d: datetime | str) -> datetime:
     """
     Converts d to a datetime object.
     :param d: Either a datetime object or a ISO 8601 datetime string.
@@ -58,7 +61,7 @@ def ensure_datetime(d):
     return d if type(d) is datetime else datetime.fromisoformat(str(d))
 
 
-def get_paragraphs(soup, selector) -> str:
+def get_paragraphs(soup: Tag, selector: str) -> str:
     return "\n\n".join(
         filter(
             lambda e: e,  # filters out empty paragraphs
@@ -67,7 +70,7 @@ def get_paragraphs(soup, selector) -> str:
     ).strip()
 
 
-def get_actor(actor_link):
+def get_actor(actor_link: str) -> dict:
     if actor_link in cache:
         return cache[actor_link]
 
@@ -245,8 +248,8 @@ for link_element in program:
     if event["people"] or event["moderator"]:
         # if only one attendee (incl. moderator)
         if len(event["people"]) + (1 if event["moderator"] else 0) == 1:
-            only_attendee = event["people"][0] if event["people"] else event["moderator"]
-            description += f"\n\nAvec {only_attendee['name']}"
+            attendee = event["people"][0] if event["people"] else event["moderator"]
+            description += f"\n\nAvec {attendee['name']}"
 
         else:
             # we could inline but black doesn't parse it
@@ -274,7 +277,7 @@ for link_element in program:
                     params={
                         "CN": actor["name"],
                         "ROLE": "REQ-PARTICIPANT",
-                        "PARTSTAT": "ACCEPTED"
+                        "PARTSTAT": "ACCEPTED",
                     },
                 )
             )
@@ -288,7 +291,11 @@ for link_element in program:
             )
 
     geo_place = places.get(event["location"])
-    location = f"{(event['room'] + ', ') if event['room'] and event['room'] != event['location'] else ''}{event['location']}{(', ' + geo_place['address']) if geo_place else ''}"
+    location = (
+        f"{(event['room'] + ', ') if event['room'] and event['room'] != event['location'] else ''}"
+        f"{event['location']}"
+        f"{(', ' + geo_place['address']) if geo_place else ''}"
+    )
 
     ical_event = Event.new(
         summary=f"{prefix} {capfirst(event['title'])}".strip(),
