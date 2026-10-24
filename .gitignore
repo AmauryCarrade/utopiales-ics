@@ -1,3 +1,5 @@
-utopiales-credentials.toml
 .idea
 .venv
+
+utopiales-credentials.toml
+data

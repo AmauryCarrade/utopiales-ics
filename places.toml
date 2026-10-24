@@ -1,0 +1,20 @@
+[[place]]
+
+name = "Cité des Congrès"
+address = "5 Rue de Valmy, 44000 Nantes"
+lat = 47.21341488492294
+long = -1.5440722165391942
+
+[[place]]
+
+name = "Lieu Unique"
+address = "Quai Ferdinand Favre, 44000 Nantes"
+lat = 47.215556420198304
+long = -1.545491340357134
+
+[[place]]
+
+name = "Espace CIC Ouest"
+address = "2 Av. Jean Claude Bonduelle, 44040 Nantes"
+lat = 47.21211714685654
+long = -1.5450509170891291
