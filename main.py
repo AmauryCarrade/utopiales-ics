@@ -306,7 +306,11 @@ for link_element in program:
         url=event["link"],
         attendees=attendees,
         organizer=organizer,
-        uid=f"{hashlib.sha256(event['link'].encode()).hexdigest()}@utopiales.carrade.eu",
+        # An event uid is the event year and the event URL (sha256’ed), as we do
+        # not have any guarantee that URLs are uniques across all years (they
+        # probably are not).
+        uid=f"{hashlib.sha256((str(ensure_datetime(event['begin']).year) + event['link']).encode()).hexdigest()}"
+        "@utopiales.carrade.eu",
     )
 
     if geo_place:
