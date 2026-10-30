@@ -198,7 +198,7 @@ if not r.ok:
 # Extract events & build ICS ---------------------------------------------------
 
 soup = BeautifulSoup(r.content, "html.parser")
-program = soup.select("table a[href]:not(.button)")
+program = soup.select("table.my-program tbody tr")
 
 calendar = Calendar.new(
     name="Utopiales",
@@ -207,14 +207,33 @@ calendar = Calendar.new(
     language="FR",
 )
 
-for link_element in program:
-    print(f"Processing {link_element.text} — {link_element['href']}")
+for table_row in program:
+    # We look up by row and not by link because we have to retrieve the events’
+    # date. For multi-date events (e.g. short film sessions), the link in the
+    # favourites table is always the one to the *first* session. We add a `date`
+    # attribute formated properly (Utopiales does not use a standard date
+    # format) to retrieve the page with the correct date and location for this
+    # date.
+    link = table_row.select_one("a:not(.button)")
+    if not link:  # TODO Dédicaces
+        continue
+
+    date_raw = table_row.select_one("td:first-child")
+    date_session = dateparser.parse(date_raw.text).replace(tzinfo=tz)
+
+    # The Utopiales website wants hours *without* 0 prefix (e.g. “9:15” not “09:15”)
+    date_session_date = date_session.strftime('%Y-%m-%d')
+    date_session_hour = date_session.strftime('%H:%M')
+    if date_session_hour.startswith("0"):
+        date_session_hour = date_session_hour[1:]
+
+    print(f"Processing {link.text} ({date_session}) — {link["href"]}?date={date_session_date}-{date_session_hour}")
 
     # Load event (from cache or scrapping)
 
-    event = get_event(str(link_element["href"]))
+    event = get_event(f"{link["href"]}?date={date_session_date}-{date_session_hour}")
     if not event:
-        print(f"Skipping–Invalid page (no date in page)")
+        print(f"Skipping: invalid page (no date in page)")
         continue
 
     # Build ICS event (with description and all) for this event.
