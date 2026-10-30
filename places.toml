@@ -18,3 +18,9 @@ name = "Espace CIC Ouest"
 address = "2 Av. Jean Claude Bonduelle, 44040 Nantes"
 lat = 47.21211714685654
 long = -1.5450509170891291
+
+[[place]]
+name = "Les ateliers de Bitche"
+address = "3 Rue de Bitche, 44000 Nantes"
+lat = 47.211846641503065
+long = -1.5418710642351336
