@@ -219,7 +219,7 @@ for table_row in program:
         continue
 
     date_raw = table_row.select_one("td:first-child")
-    date_session = dateparser.parse(date_raw.text).replace(tzinfo=tz)
+    date_session = dateparser.parse(date_raw.text, languages=["fr"]).replace(tzinfo=tz)
 
     # The Utopiales website wants hours *without* 0 prefix (e.g. “9:15” not “09:15”)
     date_session_date = date_session.strftime('%Y-%m-%d')
